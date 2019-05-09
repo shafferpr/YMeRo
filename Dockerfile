@@ -17,7 +17,7 @@ RUN apt-get install -y libhdf5-openmpi-dev
 RUN apt-get install -y cmake
 RUN apt-get install -y libopenmpi-dev
 RUN apt-get install libbfd-dev
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/python3.6/
+RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/python3.6/
 
 #expose port for ssh
 EXPOSE 20
@@ -25,4 +25,4 @@ EXPOSE 20
 ENV Name Test_build
 
 #build ymero
-make install
+RUN make install
