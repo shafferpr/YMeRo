@@ -17,6 +17,7 @@ RUN apt-get install -y libhdf5-openmpi-dev
 RUN apt-get install -y cmake
 RUN apt-get install -y libopenmpi-dev
 RUN apt-get install -y libbfd-dev
+RUN apt-get install -y ssh
 RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/python3.6/
 
 #expose port for ssh
