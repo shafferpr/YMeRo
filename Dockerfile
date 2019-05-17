@@ -1,5 +1,6 @@
 #python container
-FROM python:3.6
+FROM continuumio/miniconda3
+RUN conda install -c clawpack hdf5-parallel
 #gcc container
 FROM gcc:6.3
 #cuda container
@@ -8,17 +9,18 @@ WORKDIR /ymero
 COPY . /ymero
 #installs
 RUN apt-get update
-RUN apt-get install -y python3-dev
-RUN apt-get install -y python3-pip
-RUN pip3 install pybind11
-RUN apt-get install -y python3-distutils
+#RUN apt-get install -y python3-dev
+#RUN apt-get install -y python3-pip
+#RUN pip3 install pybind11
+#RUN apt-get install -y python3-distutils
 #RUN apt-get install -y nvidia-418
 RUN apt-get install -y libhdf5-openmpi-dev
 RUN apt-get install -y cmake
 RUN apt-get install -y libopenmpi-dev
 RUN apt-get install -y libbfd-dev
 RUN apt-get install -y ssh
-RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/python3.6/
+#RUN conda install -c clawpack hdf5-parallel
+#RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/python3.6/
 
 #expose port for ssh
 EXPOSE 20
