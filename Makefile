@@ -1,10 +1,10 @@
-PIP ?= python3 -m pip
-CMAKE_FLAGS ?= "-DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc"
+PIP ?= python -m pip
+CMAKE_FLAGS ?= ""
 
 build:
 	mkdir -p build/
 	(cd build/;	cmake ${CMAKE_FLAGS} ../)
-	make -C build/ -j
+	make -C build/ -j 4
 	cd ..
 
 install: build
