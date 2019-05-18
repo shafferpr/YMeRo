@@ -1,5 +1,5 @@
 PIP ?= python3 -m pip
-CMAKE_FLAGS ?= ""
+CMAKE_FLAGS ?= "-DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc"
 
 build:
 	mkdir -p build/
