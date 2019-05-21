@@ -1,7 +1,5 @@
 import numpy as np
 import math
-import sdf as sdf
-import struct as struct
 import sys
 import os
 

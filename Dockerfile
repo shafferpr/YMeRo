@@ -27,25 +27,21 @@ RUN chmod +x /usr/bin/tini
 
 
 RUN conda install -c clawpack hdf5-parallel
-#RUN conda install gxx_linux-64
-#RUN conda install -c conda-forge binutils
+RUN conda install gxx_linux-64
+RUN conda install numpy
+RUN conda install -c conda-forge binutils
 RUN conda install -c conda-forge/label/cf201901 binutils
 RUN conda update conda
 WORKDIR /ymero
 COPY . /ymero
 #installs
 RUN apt-get update
-#RUN apt-get install -y python3-dev
-#RUN apt-get install -y python3-pip
-#RUN pip3 install pybind11
-#RUN apt-get install -y python3-distutils
-#RUN apt-get install -y nvidia-418
-RUN apt-get install -y libhdf5-openmpi-dev
-RUN apt-get install -y cmake
-RUN apt-get install -y libopenmpi-dev
-RUN apt-get install -y libbfd-dev
-RUN apt-get install -y ssh
-
+RUN apt-get install -y libhdf5-openmpi-dev cmake libopenmpi-dev libbfd-dev ssh
+#RUN apt-get install -y cmake
+#RUN apt-get install -y libopenmpi-dev
+#RUN apt-get install -y libbfd-dev
+#RUN apt-get install -y ssh
+RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu/
 
 
 #expose port for ssh
@@ -54,4 +50,6 @@ EXPOSE 20
 ENV Name Test_build
 
 #build ymero
-#RUN make install
+RUN make install
+#install numpy
+RUN conda install numpy
