@@ -2,24 +2,26 @@ import numpy as np
 import math
 import sys
 import os
+import argparse
 
-
-#npores=int(sys.argv[1])
 
 
 class PoreNetwork(object):
-    def __init__(self,npores,boxsize,lowerc,upperc):
+    def __init__(self,npores,boxsize,lowerc,upperc,poresizeceiling,poresizefloor,outputfile):
         self.npores=npores
         self.boxsize=boxsize
         self.lowerc=lowerc
         self.upperc=upperc
+        self.poresizeceiling=poresizeceiling
+        self.poresizefloor=poresizefloor
         self.q=self.createGrid()
         self.pores=self.createPores()
         self.gridpores=self.createGridPores()
         self.throats=self.createThroats()
+        self.outputfile=outputfile
 
     def poresize(self,pore):
-        psize=3+7*(pore[2]-float(self.lowerc))/float(self.upperc-self.lowerc)
+        psize=self.poresizefloor+(self.poresizeceiling-self.poresizefloor)*(pore[2]-float(self.lowerc))/float(self.upperc-self.lowerc)
         return psize
 
     def distance(self,p1,p2):
@@ -118,91 +120,19 @@ class PoreNetwork(object):
         with open("temp","w") as f:
             f.write("%d %d %d\n"%(self.boxsize,self.boxsize,self.boxsize))
             f.write("%d %d %d\n"%(self.boxsize/2,self.boxsize/2,self.boxsize/2))
-        os.system("cat temp q.dat >qq.dat")
+        os.system("cat temp q.dat >%s"%self.outputfile)
 
 
-pn=PoreNetwork(npores=33,boxsize=80,lowerc=30,upperc=60)
-pn.QQ()
-pn.output()
-'''x=np.arange(0,90,2.0,dtype=np.float32)
-y=np.arange(0,90,2.0,dtype=np.float32)
-z=np.arange(0,90,2.0,dtype=np.float32)
-q=np.vstack(np.meshgrid(x,y,z,indexing='ij')).reshape(3,-1).T #array of 3d numbers
-
-print('qstack generated')
-x=np.random.uniform(0,90,npores)
-y=np.random.uniform(0,90,npores)
-z=np.random.uniform(20,70,npores)
-pores=np.vstack([x,y,z]).T
-throats=[]
-
-def poresize(pore):
-    psize=2+5*(pore[2]-20)/50
-    return psize
-
-def distance(p1,p2):
-    return math.sqrt((p1[0]-p2[0])**2+(p1[1]-p2[1])**2+(p1[2]-p2[2])**2)
-
-def norm(p1):
-    return p1[0]**2+p1[1]**2+p1[2]**2
-
-
-def inthroat(node1,node2,x):
-    throatlength=distance(node1,node2)
-    distanceFromLine=math.sqrt((norm(x-node1)*norm(node1-node2)-np.dot(node1-x,node2-node1)**2)/(norm(node2-node1)))
-    midpoint=0.5*(node1+node2)
-    distanceFromMidpoint=distance(x,midpoint)
-    parallelDistance=math.sqrt(distanceFromMidpoint**2-distanceFromLine**2)
-    ps1=poresize(node1)
-    ps2=poresize(node2)
-    d1=distance(x,node1)
-    d2=distance(x,node2)
-    dp=0
-    if d1 >d2:
-        dp=distanceFromMidpoint+throatlength/2
-    else:
-        dp=throatlength/2-distanceFromMidpoint
-    adjustedporesize=ps1+dp*(ps2-ps1)/throatlength
-    if distanceFromLine<adjustedporesize and parallelDistance < (throatlength/2):
-        return True
-    else:
-        return False
-
-for idx, pore in enumerate(pores):
-    distances=[distance(pore,x) for x in pores]
-    neighbors=np.argsort(distances)
-    throats.append([idx,neighbors[1]])
-    throats.append([idx,neighbors[2]])
-
-print('throats made')
-
-
-
-def sdf(x):
-    value=0.5
-    if(x[2]>70 or x[2]<20):
-        return -0.5
-    else:
-        for pore in pores:
-            if distance(x,pore) < poresize(pore):
-                return = -0.5
-        for throat in throats:
-            if inthroat(pores[throat[0]],pores[throat[1]],x):
-                return=-0.5
-    if x[2]>70 or x[2]<20:
-        value=-0.5
-    return value
-
-#apply a function to each point in array, to create the sdf 
-qq=[sdf(x) for x in q] #sdf values
-
-#write to file
-qnp=np.asarray(qq,dtype=np.float32)
-qnp.tofile("q.dat")
-
-#prepend the head to the file
-with open("temp","w") as f:
-    f.write("90 90 90\n")
-    f.write("45 45 45\n")
-os.system("cat temp q.dat >qq.dat")'''
-
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='create a membrane structure')
+    parser.add_argument('--npores', type=int, dest='npores',default=20,help="number ofspherical pores in the membrane, in excess of the predefined grid pores on the bottom, default=20")
+    parser.add_argument('--boxsize', type=int, dest='boxsize',default=80,help="total boxsize for cubic box, default=80")
+    parser.add_argument('--lowerc', type=int, dest='lowerc',default=30,help="lower cutoff for the membrane structure in the box, default=30")
+    parser.add_argument('--upperc', type=int, dest='upperc',default=60,help="upper cutoff for the membrane structure in the box, default=60")
+    parser.add_argument('--poresizeceiling', type=float, dest='poresizeceiling',default=10,help="largest pore size, near the top of the membrane, default=10")
+    parser.add_argument('--poresizefloor',type=float, dest='poresizefloor',default=3,help="smallest pore size, near at the bottom of the membrane, default=3")
+    parser.add_argument('--outputfile',dest='outputfile',default='qq.dat',help="name of sdf outputfile, used as input to simulation, default=qq.dat")
+    args = parser.parse_args()
+    pn=PoreNetwork(npores=args.npores,boxsize=args.boxsize,lowerc=args.lowerc,upperc=args.upperc,poresizeceiling=args.poresizeceiling,poresizefloor=args.poresizefloor,outputfile=args.outputfile)
+    pn.QQ()
+    pn.output()

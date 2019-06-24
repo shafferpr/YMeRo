@@ -1,11 +1,19 @@
 import ymero as ymr
 import ctypes
+import argparse
 ctypes.CDLL("libmpi.so", mode=ctypes.RTLD_GLOBAL)
+parser=argparse.ArgumentParser(description='generate a membrane structure')
+parser.add_argument('--inputfile',dest='sdf_input',default='qq.dat',help="sdf membrane structure inputfile")
+parser.add_argument('--outputprefix',dest='outputprefix',default='membrane/wall',help="prefix for the output h5 and xmf file")
+parser.add_argument('--boxsize', type=int, dest='boxsize',default=80,help="total boxsize for cubic box, default=80")
+                    
+args=parser.parse_args()
+
 rc = 1.0      # cutoff radius
 density = 2.0 # number density
 dt = 0.001
 ranks  = (1, 1, 1)
-domain = (15.0, 30.0, 30.0)
+domain = (args.boxsize,args.boxsize,args.boxsize)
 
 u = ymr.ymero(ranks, domain, dt, debug_level=3, log_filename='log')
 
@@ -19,15 +27,11 @@ u.registerInteraction(dpd)
 u.registerParticleVector(pv, ic)
 u.registerIntegrator(vv)
 
-# creation of the walls
-# we create a cylindrical pipe passing through the center of the domain along
-center = (domain[1]*0.5, domain[2]*0.5) # center in the (yz) plane
-radius = 0.5 * domain[1] - rc           # radius needs to be smaller than half of the domain
-                                        # because of the frozen particles
 
-#wall2 = ymr.Walls.Cylinder("cylinder", center=center, radius=radius, axis="x", inside=True)
-wall2 = ymr.Walls.SDF("sdfwall",sdfFilename="qq.dat")
-#u.dumpWalls2XDMF([wall2], h = (0.5, 0.5, 0.5), filename = 'h5/wall') 
+
+
+wall2 = ymr.Walls.SDF("sdfwall",sdfFilename=args.sdf_input)
+
 u.registerWall(wall2) # register the wall in the coordinator
 print("wall registered")
 # we now create the frozen particles of the walls
@@ -57,6 +61,6 @@ u.registerPlugins(ymr.Plugins.createDumpParticles('part_dump_wall', pv_frozen, d
 print("plugins registered")
 # we can dump the wall sdf in xdmf + h5 format for visualization purpose
 # the dumped file is a grid with spacings h containing the SDF values
-u.dumpWalls2XDMF([wall2], h = (0.05, 0.05, 0.05), filename = 'h5/wall')
+u.dumpWalls2XDMF([wall2], h = (0.5, 0.5, 0.5), filename = args.outputprefix)
 print("walls dumped")
 
