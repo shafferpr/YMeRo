@@ -2,11 +2,12 @@ import ymero as ymr
 import ctypes
 import argparse
 ctypes.CDLL("libmpi.so", mode=ctypes.RTLD_GLOBAL)
+
 parser=argparse.ArgumentParser(description='generate a membrane structure')
 parser.add_argument('--inputfile',dest='sdf_input',default='qq.dat',help="sdf membrane structure inputfile")
 parser.add_argument('--outputprefix',dest='outputprefix',default='membrane/wall',help="prefix for the output h5 and xmf file")
 parser.add_argument('--boxsize', type=int, dest='boxsize',default=80,help="total boxsize for cubic box, default=80")
-                    
+
 args=parser.parse_args()
 
 rc = 1.0      # cutoff radius

@@ -29,7 +29,7 @@ class PoreNetwork(object):
 
     def norm(self,p1):
         return p1[0]**2+p1[1]**2+p1[2]**2
-        
+
     def createGrid(self):
         x=np.arange(0,self.boxsize,2.0,dtype=np.float32)
         y=np.arange(0,self.boxsize,2.0,dtype=np.float32)
@@ -51,8 +51,8 @@ class PoreNetwork(object):
             for y in xy:
                 gridpores.append([x,y,self.lowerc])
         return np.asarray(gridpores)
-                
-    
+
+
     def createThroats(self):
         throats=[]
         for idx, pore in enumerate(self.pores):
@@ -87,13 +87,13 @@ class PoreNetwork(object):
             return True
         else:
             return False
-        
+
     def inpores(self,x):
         for pore in self.pores:
             if self.distance(x,pore) < self.poresize(pore):
                 return True
         return False
-    
+
     def inthroats(self,x):
         for throat in self.throats:
             if self.inthroat(self.pores[throat[0]],self.pores[throat[1]],x):
@@ -110,7 +110,7 @@ class PoreNetwork(object):
         else:
             return 0.5
 
-    def QQ(self):    
+    def QQ(self):
         self.qq=[self.sdf(x) for x in self.q] #sdf values
         return None
 
@@ -125,7 +125,7 @@ class PoreNetwork(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='create a membrane structure')
-    parser.add_argument('--npores', type=int, dest='npores',default=20,help="number ofspherical pores in the membrane, in excess of the predefined grid pores on the bottom, default=20")
+    parser.add_argument('--npores', type=int, dest='npores',default=20,help="number of spherical pores in the membrane, in excess of the predefined grid pores on the bottom, default=20")
     parser.add_argument('--boxsize', type=int, dest='boxsize',default=80,help="total boxsize for cubic box, default=80")
     parser.add_argument('--lowerc', type=int, dest='lowerc',default=30,help="lower cutoff for the membrane structure in the box, default=30")
     parser.add_argument('--upperc', type=int, dest='upperc',default=60,help="upper cutoff for the membrane structure in the box, default=60")
