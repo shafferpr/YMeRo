@@ -3,7 +3,7 @@ import math
 import sys
 import os
 import argparse
-
+import multiprocessing
 
 
 class PoreNetwork(object):
@@ -114,6 +114,11 @@ class PoreNetwork(object):
         self.qq=[self.sdf(x) for x in self.q] #sdf values
         return None
 
+    def QQ_parallel(self):
+        p=multiprocessing.Pool()
+        self.qq=p.map(self.sdf,self.q)
+        return None
+
     def output(self):
         qnp=np.asarray(self.qq,dtype=np.float32)
         qnp.tofile("q.dat")
@@ -132,7 +137,11 @@ if __name__ == '__main__':
     parser.add_argument('--poresizeceiling', type=float, dest='poresizeceiling',default=10,help="largest pore size, near the top of the membrane, default=10")
     parser.add_argument('--poresizefloor',type=float, dest='poresizefloor',default=3,help="smallest pore size, near at the bottom of the membrane, default=3")
     parser.add_argument('--outputfile',dest='outputfile',default='qq.dat',help="name of sdf outputfile, used as input to simulation, default=qq.dat")
+    parser.add_argument('--runparallel',dest='runparallel',action='store_true',default=False,help="run multiple threads in parallel, this does not require an argument")
     args = parser.parse_args()
     pn=PoreNetwork(npores=args.npores,boxsize=args.boxsize,lowerc=args.lowerc,upperc=args.upperc,poresizeceiling=args.poresizeceiling,poresizefloor=args.poresizefloor,outputfile=args.outputfile)
-    pn.QQ()
+    if args.runparallel:
+        pn.QQ_parallel()
+    else:
+        pn.QQ()
     pn.output()

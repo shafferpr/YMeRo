@@ -4,7 +4,7 @@ ctypes.CDLL("libmpi.so", mode=ctypes.RTLD_GLOBAL)
 
 
 class DPDSimulation(object):
-    def __init__(self, membrane_input_file, membrane_output_prefix, particle_output_prefix, box_size):
+    def __init__(self, membrane_input_file, membrane_output_prefix, particle_output_prefix='h5', box_size=80):
         self.membrane_input_file=membrane_input_file
         self.membrane_output_prefix=membrane_output_prefix
         self.particle_output_prefix=particle_output_prefix
@@ -39,13 +39,13 @@ class DPDSimulation(object):
         self.u.registerIntegrator(self.solvent_vv)
         self.u.setInteraction(self.solvent_dpd,self.solvent_pv,self.solvent_pv)
 
-    def setSoluteSolventInteraction(self):
+    def setSoluteSolventInteraction(self,interaction_strength):
         if self.solute_radius > 0.0:
-            self.solute_solvent_dpd=ymr.Interactions.DPD('solute_solvent_dpd', (self.solvent_radius+self.solute_radius)/2, a=10.0, gamma=10.0, kbt=1.0, power=0.5)
+            self.solute_solvent_dpd=ymr.Interactions.DPD('solute_solvent_dpd', (self.solvent_radius+self.solute_radius)/2, a=interaction_strength, gamma=10.0, kbt=1.0, power=0.5)
             self.u.registerInteraction(self.solute_solvent_dpd)
             self.u.setInteraction(self.solute_solvent_dpd,self.solvent_pv,self.solute_pv)
 
-    def initializeWall(self):
+    def initializeWall(self,solute_interaction_strength=10):
         self.wall = ymr.Walls.SDF("sdfwall",sdfFilename=self.membrane_input_file)
         self.u.registerWall(self.wall) # register the wall in the coordinator
         # we now create the frozen particles of the walls
@@ -59,16 +59,22 @@ class DPDSimulation(object):
         #set the interaction between the solute particle vector and the wall pv, and the interaction between the solvent particle vectors and the wall particle vectors
         self.u.setInteraction(self.solvent_dpd, self.solvent_pv, self.pv_wall)
         if self.solute_radius > 0.0:
-            self.u.setInteraction(self.solute_dpd, self.solute_pv, self.pv_wall)
+            self.solute_wall_dpd = ymr.Interactions.DPD('solute_wall_dpd', self.solute_radius, a=solute_interaction_strength, gamma=10.0, kbt=1.0, power=0.5)
+            self.u.registerInteraction(self.solute_wall_dpd)
+            self.u.setInteraction(self.solute_wall_dpd, self.solute_pv, self.pv_wall)
+
+    def drawWall(self):
+        self.wall = ymr.Walls.SDF("sdfwall",sdfFilename=self.membrane_input_file)
+        self.u.registerWall(self.wall)
+        self.u.dumpWalls2XDMF([self.wall], h = (0.5, 0.5, 0.5), filename = self.membrane_output_prefix)
 
     def initializeIntegrators(self):
         self.u.setIntegrator(self.solvent_vv, self.solvent_pv)
         if self.solute_radius > 0.0 :
             self.u.setIntegrator(self.solute_vv, self.solute_pv)
 
-    def createOutput(self):
+    def createOutput(self,dump_every):
         self.u.registerPlugins(ymr.Plugins.createStats('stats', every=200))
-        dump_every = 5
         self.u.registerPlugins(ymr.Plugins.createDumpParticles('part_dump', self.solvent_pv, dump_every, [], '%s/solvent_particles-'%self.particle_output_prefix))
         if self.solute_radius > 0.0:
             self.u.registerPlugins(ymr.Plugins.createDumpParticles('part_dump_solute', self.solute_pv, dump_every, [], '%s/solute_particles-'%self.particle_output_prefix))
@@ -82,6 +88,6 @@ class DPDSimulation(object):
     def statistics(self):
         pass
 
-    def runSimulation(self):
+    def runSimulation(self,steps):
         print("running")
-        self.u.run(50)
+        self.u.run(steps)
