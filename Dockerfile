@@ -14,7 +14,7 @@ RUN apt-get update --fix-missing && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
     /opt/conda/bin/conda clean -tipsy && \
@@ -31,7 +31,7 @@ RUN conda install gxx_linux-64
 RUN conda install numpy
 RUN conda install -c conda-forge binutils
 RUN conda install -c conda-forge/label/cf201901 binutils
-RUN conda update conda
+#RUN conda update conda
 WORKDIR /ymero
 COPY . /ymero
 #installs
@@ -52,4 +52,4 @@ ENV Name Test_build
 #build ymero
 RUN make install
 #install numpy
-RUN conda install numpy
+#RUN conda install numpy
